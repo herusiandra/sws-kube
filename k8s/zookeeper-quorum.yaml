@@ -1,0 +1,253 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sws-fels
+---
+# PV dan PVC untuk zookeeper-0
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-0
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/bitnami/zookeeper/0"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-0
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: zookeeper-pv-0
+---
+# Deployment zookeeper-0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-0
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+      instance: zk0
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        instance: zk0
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          env:
+            - name: ZOO_SERVER_ID
+              value: "1"
+            - name: ZOO_SERVERS
+              value: "zookeeper-0.svc.cluster.local:2888:3888,zookeeper-1.svc.cluster.local:2888:3888,zookeeper-2.svc.cluster.local:2888:3888"
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-0
+  namespace: sws-fels
+spec:
+  selector:
+    app: zookeeper
+    instance: zk0
+  ports:
+    - port: 2181
+      name: client
+    - port: 2888
+      name: peer
+    - port: 3888
+      name: election
+---
+# PV dan PVC untuk zookeeper-1
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-1
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/bitnami/zookeeper/1"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-1
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: zookeeper-pv-1
+---
+# Deployment zookeeper-1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-1
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+      instance: zk1
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        instance: zk1
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          env:
+            - name: ZOO_SERVER_ID
+              value: "2"
+            - name: ZOO_SERVERS
+              value: "zookeeper-0.svc.cluster.local:2888:3888,zookeeper-1.svc.cluster.local:2888:3888,zookeeper-2.svc.cluster.local:2888:3888"
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-1
+  namespace: sws-fels
+spec:
+  selector:
+    app: zookeeper
+    instance: zk1
+  ports:
+    - port: 2181
+      name: client
+    - port: 2888
+      name: peer
+    - port: 3888
+      name: election
+---
+# PV dan PVC untuk zookeeper-2
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-2
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/bitnami/zookeeper/2"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-2
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: zookeeper-pv-2
+---
+# Deployment zookeeper-2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-2
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+      instance: zk2
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        instance: zk2
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          env:
+            - name: ZOO_SERVER_ID
+              value: "3"
+            - name: ZOO_SERVERS
+              value: "zookeeper-0.svc.cluster.local:2888:3888,zookeeper-1.svc.cluster.local:2888:3888,zookeeper-2.svc.cluster.local:2888:3888"
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc-2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-2
+  namespace: sws-fels
+spec:
+  selector:
+    app: zookeeper
+    instance: zk2
+  ports:
+    - port: 2181
+      name: client
+    - port: 2888
+      name: peer
+    - port: 3888
+      name: election

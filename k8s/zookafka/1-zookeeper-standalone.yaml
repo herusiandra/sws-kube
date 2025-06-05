@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sws-fels
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv
+  namespace: sws-fels
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /bitnami/zookeeper
+    type: Directory
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeper-config
+  namespace: sws-fels
+data:
+  zookeeper.properties: |
+    tickTime=2000
+    initLimit=10
+    syncLimit=5
+    dataDir=/bitnami/zookeeper
+    clientPort=2181
+    # Hanya satu node, tidak ada konfigurasi quorum
+    server.1=zookeeper-0.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-headless
+  namespace: sws-fels
+  labels:
+    app: zookeeper
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 2181
+      targetPort: 2181
+  selector:
+    app: zookeeper
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"   # Menambahkan variabel lingkungan untuk mengizinkan login anonim
+            - name: ZOO_ENABLE_AUTH
+              value: "no"    # Menonaktifkan autentikasi Zookeeper
+          envFrom:
+            - configMapRef:
+                name: zookeeper-config
+          ports:
+            - name: client
+              containerPort: 2181
+            - name: quorum
+              containerPort: 2888
+            - name: leader-election
+              containerPort: 3888
+          volumeMounts:
+            - name: zookeeper-storage
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: zookeeper-storage
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: sws-fels
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - port: 2181
+      targetPort: 2181
+  type: ClusterIP

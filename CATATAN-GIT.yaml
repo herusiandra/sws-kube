@@ -1,0 +1,32 @@
+repo : 
+ - git remote add origin https://github.com/herusiandra/sws-kube.git
+ - git config --global user.name "Heru Siandra"
+ - git config --global user.email "herusiandra@gmail.com"
+
+git add:
+ git add .
+
+Cek status sekarang:
+ git status
+
+Kalau kamu sudah git add ., lanjut:
+ git commit -m "Initial commit"
+
+ Jika kamu mau pakai branch master:
+ - git branch -M master
+ - git push -u origin master
+
+Atau kalau kamu mau pakai main:
+ - git branch -M main
+ - git push -u origin main
+
+Log:
+ git log --oneline
+
+
+   
+habis ribah sesuatu:
+ git add
+ git commit -m "hapus file jar"   atau
+ git commit --amend --no-edit
+ git push origin master

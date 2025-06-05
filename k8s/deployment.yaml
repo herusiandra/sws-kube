@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: license-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: license-service
+  template:
+    metadata:
+      labels:
+        app: license-service
+    spec:
+      containers:
+        - name: license
+          image: your-registry/license-service:1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: EASTNETS_SWFNG_HOME
+              value: "/app"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config/application.properties
+              subPath: application.properties
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: license-service-config

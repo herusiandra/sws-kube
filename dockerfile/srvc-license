@@ -1,0 +1,27 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11
+
+# Metadata image
+LABEL maintainer="fels@gmail.com" \
+      version="1.0" \
+      description="Microservice License service based on Red Hat UBI"
+
+# Set environment (bisa di-override via Kubernetes)
+ENV EASTNETS_SWFNG_HOME=/app
+
+# Buat user non-root
+RUN useradd -r safewatch
+
+# Buat struktur folder
+WORKDIR /app
+RUN mkdir -p /app/bin /app/config /app/logs && \
+    chown -R safewatch:safewatch /app
+
+# Copy jar dan config
+COPY srvc-license-qk-oracle-runner.jar /app/bin/service.jar
+COPY config/ /app/config/
+
+# Set permission & switch ke user non-root
+USER safewatch
+
+# Gunakan ENTRYPOINT agar fleksibel dan logs ke stdout
+ENTRYPOINT ["java", "-jar", "/app/bin/service.jar"]

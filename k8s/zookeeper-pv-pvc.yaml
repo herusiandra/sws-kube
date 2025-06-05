@@ -1,0 +1,85 @@
+# Zookeeper PersistentVolumes (PV)
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-0
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /bitnami/zookeeper-0   # Sesuaikan dengan mount path container
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-1
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /bitnami/zookeeper-1
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: zookeeper-pv-2
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /bitnami/zookeeper-2
+
+# Zookeeper PersistentVolumeClaims (PVC)
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-0
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: zookeeper-pv-0
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-1
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: zookeeper-pv-1
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc-2
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: zookeeper-pv-2

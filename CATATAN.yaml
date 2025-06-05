@@ -1,0 +1,80 @@
+1. Fungsi LABEL di Dockerfile
+
+LABEL maintainer="you@example.com" \
+     version="1.0" \
+      description="Microservice License service based on Red Hat UBI"
+
+Apa itu?
+LABEL adalah cara memberi metadata pada Docker image.
+
+Tujuannya:
+Memberikan informasi tambahan untuk dokumentasi image.
+
+Membantu tools CI/CD, registry, atau automation pipeline mengenali image.
+
+Bisa dipakai dalam searching/filtering di registry:  docker image inspect license-service
+
+LABEL	Manfaat
+maintainer	Menunjukkan siapa yang bertanggung jawab jika ada masalah pada image.
+version	Menandai versi logic aplikasi atau kontainer. Bisa dipakai untuk rollback.
+description	Menjelaskan isi image (berguna di tim besar & registry image browser).  
+
+2. Kenapa Gunakan ENTRYPOINT Bukan CMD
+
+
+
+3. Apply / deploy kubernates
+
+kubectl apply -f kafka-zookeeper-cluster.yaml
+
+
+delete POD_NAME
+  kubectl delete pod -n sws-fels -l app=zookeeper\n
+  kubectl delete statefulset -n sws-fels -l app=zookeeper
+  kubectl delete pvc -n sws-fels -l app=zookeeper
+  kubectl delete pod -n sws-fels -l app=kafka
+  kubectl delete statefulset -n sws-fels -l app=kafka
+  kubectl delete pvc -n sws-fels -l app=kafka
+
+
+  kubectl delete namespace sws-fels
+
+kubectl create namespace sws-fels
+
+#membuat pv dan pvc
+#buat direktory
+sudo mkdir -p /data/zookeeper-{0,1,2} /data/kafka-{0,1,2}
+sudo chmod -R 777 /data
+
+kubectl create namespace sws-fels
+kubectl apply -f kafka-pv-pvc.yaml 
+kubectl apply -f zookeeper-pv-pvc.yaml
+
+kubectl get pv -n sws-fels
+kubectl get pvc -n sws-fels
+
+k apply -f zookeeper/zookeeper-service.yaml
+
+hapus pv
+-----------------------------------------------
+kubectl delete pv kafka-pv-0 -n sws-fels
+kubectl delete pv kafka-pv-1 -n sws-fels
+kubectl delete pv kafka-pv-2 -n sws-fels
+kubectl delete pv zookeeper-pv-0 -n sws-fels
+kubectl delete pv zookeeper-pv-1 -n sws-fels
+kubectl delete pv zookeeper-pv-2 -n sws-fels
+
+
+kubectl apply -f zoostatufull/manual-storageclass.yaml
+
+kubectl delete storageclass manual
+
+⚠️ Catatan Penting
+Jangan buat PV/PVC manual jika pakai StatefulSet + volumeClaimTemplates.
+
+Jika cluster Anda tidak punya StorageClass default, Anda harus buat StorageClass dulu, atau akan tetap Pending.
+
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+
+#topic
+kafka-topics.sh --list --bootstrap-server localhost:9092

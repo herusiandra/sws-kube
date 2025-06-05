@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-create-topics
+  namespace: sws-fels
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-topics
+          image: bitnami/kafka:latest
+          env:
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+              value: "zookeeper-headless.sws-fels.svc.cluster.local:2181"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Creating Kafka topics..."
+              for topic in \
+                sws.interservice \
+                sws.monitoring \
+                sws.detection.newExternal \
+                sws.detection.newAccepted \
+                sws.detection.newReported \
+                sws.detection.newClean \
+                sws.detection.realViolation \
+                sws.detection.falsePositive \
+                sws.detection.dontKnow \
+                sws.detection.new \
+                sws.detection.new.deadLetter; do
+                kafka-topics.sh \
+                  --create \
+                  --bootstrap-server kafka.sws-fels.svc.cluster.local:9092 \
+                  --replication-factor 1 \
+                  --partitions 1 \
+                  --topic "$topic" \
+                  --if-not-exists
+              done

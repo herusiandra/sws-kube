@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: sws-fels
+spec:
+  serviceName: zookeeper-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: leader-election
+          env:
+            - name: ZOO_ENABLE_AUTH
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOO_ENABLE_AUTH
+            - name: ZOO_SERVER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ZOO_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOO_SERVERS
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: zookeeper-data
+          hostPath:
+            path: /bitnami/zookeeper
+            type: DirectoryOrCreate

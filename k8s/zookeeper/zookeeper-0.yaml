@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-0
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+      instance: zookeeper-0
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        instance: zookeeper-0
+    spec:
+      hostname: zookeeper-0
+      subdomain: zookeeper-headless
+      initContainers:
+        - name: init-myid
+          image: busybox
+          command: ["sh", "-c", "echo '1' > /bitnami/zookeeper/data/myid"]
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+            - name: ZOO_SERVERS
+              value: |
+                zookeeper-0.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888;
+                zookeeper-1.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888;
+                zookeeper-2.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc-0

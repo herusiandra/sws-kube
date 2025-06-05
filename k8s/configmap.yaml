@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: license-service-config
+data:
+  application.properties: |
+    zookeeper.connect-string=
+    kafka.bootstrap.servers=
+    %oracle.database.jdbc.scdb.url=
+    %oracle.database.jdbc.filtering.url=
+    %oracle.quarkus.datasource."scdbPU".username=
+    %oracle.quarkus.datasource."scdbPU".password=
+    %oracle.quarkus.datasource."filteringPU".username=
+    %oracle.quarkus.datasource."filteringPU".password=

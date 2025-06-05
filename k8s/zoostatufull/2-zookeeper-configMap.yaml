@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeper-config
+  namespace: sws-fels
+data:
+  ZOO_ENABLE_AUTH: "no"
+  ZOO_SERVER_ID: "1"  # Akan di-override oleh StatefulSet
+  ZOO_SERVERS: "zookeeper-0.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888 zookeeper-1.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888 zookeeper-2.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888"

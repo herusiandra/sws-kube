@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-headless
+  namespace: sws-fels
+  labels:
+    app: zookeeper
+spec:
+  clusterIP: None
+  selector:
+    app: zookeeper
+  ports:
+    - name: client
+      port: 2181
+    - name: server
+      port: 2888
+    - name: leader-election
+      port: 3888
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeper-config
+  namespace: sws-fels
+data:
+  ZOO_ENABLE_AUTH: "no"
+  ZOO_SERVERS: |
+    zookeeper-0.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888
+    zookeeper-1.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888
+    zookeeper-2.zookeeper-headless.sws-fels.svc.cluster.local:2888:3888
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: sws-fels
+spec:
+  serviceName: zookeeper-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: leader-election
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ZOO_ENABLE_AUTH
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOO_ENABLE_AUTH
+            - name: ZOO_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOO_SERVERS
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+
+          command:
+            - sh
+            - -c
+            - |
+              export ZOO_SERVER_ID=$((${MY_POD_NAME##*-} + 1))
+              exec /opt/bitnami/scripts/zookeeper/entrypoint.sh /opt/bitnami/scripts/zookeeper/run.sh
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: /bitnami/zookeeper
+  volumeClaimTemplates:
+    - metadata:
+        name: zookeeper-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi

@@ -1,0 +1,21 @@
+replicaCount: 3  # Kafka 3 broker
+
+auth:
+  enabled: false
+
+allowPlaintextListener: true
+
+persistence:
+  enabled: true
+  size: 5Gi
+
+# Zookeeper config as subchart
+zookeeper:
+  enabled: true
+  replicaCount: 3  # Zookeeper quorum 3 node
+  auth:
+    enabled: false
+  allowAnonymousLogin: true
+  persistence:
+    enabled: true
+    size: 1Gi
