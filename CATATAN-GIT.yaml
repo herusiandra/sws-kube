@@ -28,7 +28,7 @@ habis rubah sesuatu:
   - git status
   - git add .
   - git commit -m "command nya"
-  - git rebase --continue   //jika conflik
+  - git rebase --continue   //jika conflik  ex git pull --rebase origin sws-fels
   - git push -u origin sws-fels
 
 
