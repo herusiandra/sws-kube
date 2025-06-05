@@ -30,3 +30,21 @@ habis ribah sesuatu:
  git commit -m "hapus file jar"   atau
  git commit --amend --no-edit
  git push origin master
+ git push origin master
+
+
+#Buat Branch Baru
+Contoh membuat branch baru bernama main:
+  git checkout -b sws-fels
+
+Push Branch Baru ke Remote:
+  git push -u origin sws-fels
+#-u = set upstream, supaya ke depannya kamu cukup git push saja tanpa perlu sebut nama branch.
+#origin = remote name default untuk GitHub.
+
+sws-fels = nama branch lokal kamu.
+check branch aktif:
+  git branch
+  
+Cek semua branch remote:
+  git branch -r
