@@ -23,9 +23,16 @@ Atau kalau kamu mau pakai main:
 Log:
  git log --oneline
 
+#setelah merubah sesuatu pada file dalam git
+habis rubah sesuatu:
+  - git status
+  - git add .
+  - git commit -m "command nya"
+  - git rebase --continue   //jika conflik
+  - git push -u origin sws-fels
 
-   
-habis ribah sesuatu:
+
+commadn yang lain yang bisa di gunakan:
  git add
  git commit -m "hapus file jar"   atau
  git commit --amend --no-edit
