@@ -1,27 +1,39 @@
-FROM registry.access.redhat.com/ubi8/openjdk-11
+# Gunakan Red Hat UBI 8 (minimal) sebagai base
+FROM registry.access.redhat.com/ubi8/ubi
 
-# Metadata image
+# Metadata
 LABEL maintainer="fels@gmail.com" \
       version="1.0" \
-      description="Microservice License service based on Red Hat UBI"
+      description="Microservice License service with manual OpenJDK setup"
 
-# Set environment (bisa di-override via Kubernetes)
-ENV EASTNETS_SWFNG_HOME=/app
+# Install OpenJDK 11
+# RUN microdnf install -y java-11-openjdk && microdnf clean all
+RUN dnf install -y java-11-openjdk && dnf clean all
 
-# Buat user non-root
-RUN useradd -r safewatch
+# Buat user & group dengan UID:GID 185
+RUN groupadd -g 185 safewatch && \
+    useradd -u 185 -g safewatch -s /sbin/nologin -d /app safewatch
 
-# Buat struktur folder
-WORKDIR /app
+# Buat direktori & ubah ownership
 RUN mkdir -p /app/bin /app/config /app/logs && \
     chown -R safewatch:safewatch /app
 
-# Copy jar dan config
+# Set working dir
+WORKDIR /app
+
+# Copy JAR dan config
 COPY srvc-license-qk-oracle-runner.jar /app/bin/service.jar
 COPY config/ /app/config/
 
-# Set permission & switch ke user non-root
+# Ubah ownership (untuk memastikan)
+RUN chown -R safewatch:safewatch /app
+
+# Switch ke user non-root
 USER safewatch
 
-# Gunakan ENTRYPOINT agar fleksibel dan logs ke stdout
-ENTRYPOINT ["java", "-jar", "/app/bin/service.jar"]
+# Default env
+ENV EASTNETS_SWFNG_HOME=/app \
+    JAVA_OPTS=""
+
+# Jalankan
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/bin/service.jar"]
