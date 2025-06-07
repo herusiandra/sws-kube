@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<domains project-version="3.0.0.1">
+<domain name="SppDomain">
+	<property name="eastnets.ordering.translator.factory" value="com.sideinternational.sas.database.OracleOrderingTranslator" />
+	<property name="cayenne.DataRowStore.snapshot.size" value="100000"/>	 
+
+	<map name="SasDomainMap" location="scdb-mapping/SasDomainMapOra.map.xml"/>
+	<map name="SfpDomainMap" location="sfp-mapping/SfpDomainMapOra.map.xml"/>
+
+	<node name="SasDomainNode"
+		 datasource="SasDomainNodeOra.driver.xml"
+		 factory="com.sideinternational.web.swaf.configuration.DomainNodeDataSourceFactory">
+			<map-ref name="SasDomainMap"/>
+	</node>
+	<node name="SfpDomainNode"
+		 datasource="SfpDomainNodeOra.driver.xml"
+		 factory="com.sideinternational.web.swaf.configuration.DomainNodeDataSourceFactory">
+			<map-ref name="SfpDomainMap"/>
+	</node>
+</domain>
+</domains>

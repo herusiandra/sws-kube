@@ -33,7 +33,6 @@ USER safewatch
 
 # Default env
 ENV EASTNETS_SWFNG_HOME=/app \
-    EASTNETS_CONFIG_HOME=/app \
     JAVA_OPTS=""
 
 # Jalankan
