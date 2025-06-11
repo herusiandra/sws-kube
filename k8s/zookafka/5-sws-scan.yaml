@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scan-config
+  namespace: sws-fels
+data:
+  ZOOKEEPER_CONNECT_STRING: zookeeper-headless.sws-fels.svc.cluster.local:2181
+  KAFKA_BOOTSTRAP_SERVERS: kafka-headless.sws-fels.svc.cluster.local:9092
+  ORACLE_DATABASE_JDBC_SCDB_URL: jdbc:oracle:thin:@192.168.220.70:1521/safewatch
+  ORACLE_DATABASE_JDBC_FILTERING_URL: jdbc:oracle:thin:@192.168.220.70:1521/safewatch
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scan-secret
+  namespace: sws-fels
+type: Opaque
+stringData:
+  ORACLE_SCDB_USERNAME: scdb
+  ORACLE_SCDB_PASSWORD: 47d65070cc33c31965ab8b61faf8078c
+  ORACLE_FILTERING_USERNAME: swserver
+  ORACLE_FILTERING_PASSWORD: 47d65070cc33c31965ab8b61faf8078c
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sws-scan
+  namespace: sws-fels
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scan
+  template:
+    metadata:
+      labels:
+        app: scan
+    spec:
+      containers:
+        - name: scan
+          image: herusiandra/scan:5.2.0
+          env:
+            - name: EASTNETS_CONFIG_HOME
+              value: /app/config
+            - name: EASTNETS_SWFNG_HOME
+              value: /app
+            - name: ZOOKEEPER_CONNECT_STRING
+              valueFrom:
+                configMapKeyRef:
+                  name: scan-config
+                  key: ZOOKEEPER_CONNECT_STRING
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: scan-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: ORACLE_DATABASE_JDBC_SCDB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: scan-config
+                  key: ORACLE_DATABASE_JDBC_SCDB_URL
+            - name: ORACLE_DATABASE_JDBC_FILTERING_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: scan-config
+                  key: ORACLE_DATABASE_JDBC_FILTERING_URL
+            - name: ORACLE_SCDB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: scan-secret
+                  key: ORACLE_SCDB_USERNAME
+            - name: ORACLE_SCDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: scan-secret
+                  key: ORACLE_SCDB_PASSWORD
+            - name: ORACLE_FILTERING_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: scan-secret
+                  key: ORACLE_FILTERING_USERNAME
+            - name: ORACLE_FILTERING_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: scan-secret
+                  key: ORACLE_FILTERING_PASSWORD

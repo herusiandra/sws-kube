@@ -1,0 +1,6 @@
+
+Export Docker image jadi file:
+  docker save -o /mnt/e/AppDocument/Docker/docker_image/license.tar herusiandra/license:1.0
+
+Restore kembali saat dibutuhkan:
+  docker load -i /mnt/e/AppDocument/Docker/docker_image/license.tar

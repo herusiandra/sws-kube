@@ -24,7 +24,7 @@ stringData:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: license-app
+  name: sws-license
   namespace: sws-fels
 spec:
   replicas: 1
@@ -38,10 +38,10 @@ spec:
     spec:
       containers:
         - name: license
-          image: herusiandra/license:1.0
+          image: herusiandra/license:5.2.0
           env:
             - name: EASTNETS_CONFIG_HOME
-              value: /app
+              value: /app/config
             - name: EASTNETS_SWFNG_HOME
               value: /app
             - name: ZOOKEEPER_CONNECT_STRING

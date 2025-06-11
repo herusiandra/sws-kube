@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<domains project-version="3.0.0.1">
+<domain name="Domain">
+	<map name="SasDomainMap" location="scdb-mapping/SasDomainMapOra.map.xml"/>
+	<node name="SasDomainNode"
+		 datasource="SasDomainNodeOra.driver.xml"
+		 factory="com.sideinternational.sas.configuration.DomainNodeDataSourceFactory">
+			<map-ref name="SasDomainMap"/>
+	</node>
+</domain>
+</domains>

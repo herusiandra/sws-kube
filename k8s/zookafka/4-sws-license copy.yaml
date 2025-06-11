@@ -21,6 +21,21 @@ stringData:
   ORACLE_FILTERING_USERNAME: swserver
   ORACLE_FILTERING_PASSWORD: 47d65070cc33c31965ab8b61faf8078c
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: license-app-service
+  namespace: sws-fels
+spec:
+  selector:
+    app: license-app
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30081   # Port external
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,10 +53,10 @@ spec:
     spec:
       containers:
         - name: license
-          image: herusiandra/license:1.0
+          image: herusiandra/license:5.2.0
           env:
             - name: EASTNETS_CONFIG_HOME
-              value: /app
+              value: /app/config
             - name: EASTNETS_SWFNG_HOME
               value: /app
             - name: ZOOKEEPER_CONNECT_STRING

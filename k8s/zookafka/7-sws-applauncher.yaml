@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: input-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /app/inout/input
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: output-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /app/inout/output
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-input
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: input-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-output
+  namespace: sws-fels
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: output-pv
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sws-applauncher
+  namespace: sws-fels
+  labels:
+    app: applauncher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: applauncher
+  template:
+    metadata:
+      labels:
+        app: applauncher
+    spec:
+      securityContext:
+        runAsUser: 1085
+        runAsGroup: 1085
+        runAsNonRoot: true
+      containers:
+        - name: applauncher
+          image: herusiandra/applauncher:5.2.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: EASTNETS_CONFIG_HOME
+              value: "/app/config"
+            - name: JAVA_OPTS
+              value: ""
+          workingDir: /applauncher
+          volumeMounts:
+            - name: input-volume
+              mountPath: /app/inout/input
+            - name: output-volume
+              mountPath: /app/inout/output
+          readinessProbe:
+            exec:
+              command: ["test", "-d", "/app/inout/input"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pgrep", "-f", "side-applimanager.jar"]
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+      volumes:
+        - name: input-volume
+          persistentVolumeClaim:
+            claimName: pvc-input
+        - name: output-volume
+          persistentVolumeClaim:
+            claimName: pvc-output

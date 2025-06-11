@@ -1,0 +1,11 @@
+EASTNETS_CONFIG_HOME	: /app/config
+EASTNETS_SWFNG_HOME		: /app
+file jar service		: /app/bin
+file config service		: /app/config
+file lof service 		: /app/logs
+
+INPUT_PATH				: /app/inout/input
+OUTPUT_PATH				: /app/inout/output
+
+
+

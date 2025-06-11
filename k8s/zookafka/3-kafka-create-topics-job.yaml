@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kafka-create-topics
+  name: sws-kafka-create-topics
   namespace: sws-fels
 spec:
   template:

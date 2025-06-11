@@ -1,0 +1,40 @@
+# Gunakan Red Hat UBI 8 (minimal) sebagai base
+FROM registry.access.redhat.com/ubi8/ubi
+
+# Metadata
+LABEL maintainer="fels@gmail.com" \
+      version="1.0" \
+      description="Microservice Scan service with manual OpenJDK setup"
+
+# Install OpenJDK 11 dengan minimal dependency dan bersih
+RUN dnf install -y java-11-openjdk \
+    --setopt=install_weak_deps=False --nodocs && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/cache/yum
+
+# Buat user & group dengan UID:GID 185
+RUN groupadd -g 185 safewatch && \
+    useradd -u 185 -g safewatch -s /sbin/nologin -d /app safewatch
+
+# Buat direktori & ubah ownership
+RUN mkdir -p /app/bin /app/config /app/logs && \
+    chown -R safewatch:safewatch /app
+
+# Set working dir
+WORKDIR /app
+
+# Copy JAR dan config sekaligus ubah ownership
+COPY --chown=safewatch:safewatch srvc-scan-qk-oracle-runner.jar /app/bin/service.jar
+COPY --chown=safewatch:safewatch config/ /app/config/
+
+# Switch ke user non-root
+USER safewatch
+
+# Default env  
+#check lagi eastnets_swfng_home nya
+ENV EASTNETS_SWFNG_HOME=/app \
+    EASTNETS_CONFIG_HOME=/app/config \  
+    JAVA_OPTS=""
+
+# Jalankan
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/bin/service.jar"]

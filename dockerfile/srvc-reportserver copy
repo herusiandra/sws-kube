@@ -1,0 +1,38 @@
+# Gunakan Red Hat UBI 8 (minimal)
+FROM registry.access.redhat.com/ubi8/ubi
+
+LABEL maintainer="fels@gmail.com" \
+      version="1.0" \
+      description="EastNets Report Server 5.2.0 (Java 11, UBI8)"
+
+# Install OpenJDK 11 minimal
+RUN dnf install -y java-11-openjdk \
+    --setopt=install_weak_deps=False --nodocs && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/cache/yum
+
+# Tambahkan user non-root
+RUN groupadd -g 185 safewatch && \
+    useradd -u 185 -g safewatch -s /sbin/nologin -d /app safewatch
+
+# Buat struktur direktori dan set permission
+RUN mkdir -p /app/reportserver/conf /app/reportserver/logs /app/inout/input /app/inout/output /app/config && \
+    chown -R safewatch:safewatch /app
+
+# Set direktori kerja ke folder tempat rptsrv-config.xml berada
+WORKDIR /app/reportserver/conf
+
+# Salin JAR dan folder yang berisi conf serta config lainnya
+COPY --chown=safewatch:safewatch enReportSrv.jar /app/reportserver/
+COPY --chown=safewatch:safewatch reportserver/ /app/reportserver/
+COPY --chown=safewatch:safewatch config/ /app/config/
+
+# Ganti ke user non-root
+USER safewatch
+
+# Set environment variable jika diperlukan
+ENV EASTNETS_CONFIG_HOME=/app/config \
+    JAVA_OPTS=""
+
+# Jalankan dari folder conf
+CMD ["java", "-jar", "../enReportSrv.jar"]

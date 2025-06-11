@@ -57,7 +57,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka
+  name: sws-kafka
   namespace: sws-fels
 spec:
   replicas: 1

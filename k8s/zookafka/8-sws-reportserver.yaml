@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sws-reportserver
+  namespace: sws-fels
+  labels:
+    app: reportserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reportserver
+  template:
+    metadata:
+      labels:
+        app: reportserver
+    spec:
+      securityContext:
+        runAsUser: 1085
+        runAsGroup: 1085
+        runAsNonRoot: true
+      containers:
+        - name: reportserver
+          image: herusiandra/reportserver:5.2.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: EASTNETS_CONFIG_HOME
+              value: "/app/config"
+            - name: JAVA_OPTS
+              value: ""
+          workingDir: /reportserver
+          command: ["java"]
+          args: ["-jar", "enReportSrv.jar"]
+          volumeMounts:
+            - name: input-volume
+              mountPath: /app/inout/input
+            - name: output-volume
+              mountPath: /app/inout/output
+          readinessProbe:
+            exec:
+              command: ["test", "-f", "/reportserver/enReportSrv.jar"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pgrep", "-f", "enReportSrv.jar"]
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+      volumes:
+        - name: input-volume
+          persistentVolumeClaim:
+            claimName: pvc-input
+        - name: output-volume
+          persistentVolumeClaim:
+            claimName: pvc-output

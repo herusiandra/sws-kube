@@ -1,0 +1,25 @@
+FROM tomcat:9-jdk17-temurin
+
+LABEL maintainer="fels@gmail.com" \
+      version="5.2.0" \
+      description="AMLUI menggunakan tomcat9 temurin"
+
+RUN groupadd -g 1085 safewatch && \
+    useradd -u 1085 -g safewatch -s /sbin/nologin -d /app safewatch
+
+RUN mkdir -p /app/inout/input /app/inout/output /app/config && \
+    chown -R safewatch:safewatch /app
+
+# Ini bagian penting untuk menghindari error tadi
+RUN chown -R safewatch:safewatch /usr/local/tomcat/webapps
+
+COPY --chown=safewatch:safewatch AMLUI.war /usr/local/tomcat/webapps/AMLUI.war
+COPY --chown=safewatch:safewatch config/ /app/config/
+
+USER safewatch
+
+ENV EASTNETS_CONFIG_HOME=/app/config 
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]

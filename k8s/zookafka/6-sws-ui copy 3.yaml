@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sws-fels
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: input-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /app/inout/input
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: output-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /app/inout/output
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-input
+  namespace: sws-fels
+spec:
+  volumeName: input-pv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-output
+  namespace: sws-fels
+spec:
+  volumeName: output-pv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aml-driver-config
+  namespace: sws-fels
+data:
+  SasDomainNodeOra.driver.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <driver project-version="3.0.0.1" class="oracle.jdbc.driver.OracleDriver">
+      <url value="jdbc:oracle:thin:@//192.168.220.70:1521/safewatch"/>
+      <connectionPool min="1" max="5" />
+    </driver>
+  SfpDomainNodeOra.driver.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <driver project-version="3.0.0.1" class="oracle.jdbc.driver.OracleDriver">
+      <url value="jdbc:oracle:thin:@//192.168.220.70:1521/safewatch"/>
+      <connectionPool min="1" max="5" />
+    </driver>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sws-ui
+  namespace: sws-fels
+  labels:
+    app: sws-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sws-ui
+  template:
+    metadata:
+      labels:
+        app: sws-ui
+    spec:
+      securityContext:
+        runAsUser: 1085
+        runAsGroup: 1085
+        runAsNonRoot: true
+        fsGroup: 1085
+      containers:
+        - name: amlui
+          image: herusiandra/amlui:5.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EASTNETS_CONFIG_HOME
+              value: "/app/config"
+            - name: EN_SWF_ZK_CONNECT_STRING
+              value: zookeeper-headless.sws-fels.svc.cluster.local:2181
+          volumeMounts:
+            - name: input-volume
+              mountPath: /app/inout/input
+            - name: output-volume
+              mountPath: /app/inout/output
+        - name: applauncher
+          image: herusiandra/applauncher:5.2.0
+          imagePullPolicy: IfNotPresent
+          command: ["java", "-jar", "side-applimanager.jar"]
+          workingDir: /applauncher
+          env:
+            - name: EASTNETS_CONFIG_HOME
+              value: "/app/config"
+            - name: JAVA_OPTS
+              value: ""
+          volumeMounts:
+            - name: input-volume
+              mountPath: /app/inout/input
+            - name: output-volume
+              mountPath: /app/inout/output
+          readinessProbe:
+            exec:
+              command: ["test", "-d", "/app/inout/input"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pgrep", "-f", "side-applimanager.jar"]
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+      volumes:
+        - name: input-volume
+          persistentVolumeClaim:
+            claimName: pvc-input
+        - name: output-volume
+          persistentVolumeClaim:
+            claimName: pvc-output
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-service
+  namespace: sws-fels
+spec:
+  selector:
+    app: sws-ui
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+	<!-- Application description -->
+	<application-definition>
+		<id>APPMGR</id>
+	</application-definition>
+
+	<database>
+		<domain-node-login>
+			<name>SasDomainNodeOra.driver.xml</name>
+			<file>
+				<location>[CONFIGURATION_HOME]</location>
+				<name>en-domain-nodeOra.user.sxml</name>
+				<encrypted>yes</encrypted>
+			</file>
+		</domain-node-login>
+	</database>
+
+	<event-definition>
+
+		<attribute-finder-class>com.sideinternational.applauncher.EventAttributeFinderImpl</attribute-finder-class>
+
+		<resource>
+			<event-type-bundles>
+				<bundle-base-name>com.sideinternational.sas.event.resource.SASEventTypeResources</bundle-base-name>
+			</event-type-bundles>
+			<event-text-bundles>
+				<bundle-base-name>com.sideinternational.sas.event.resource.SASEventResources</bundle-base-name>
+			</event-text-bundles>
+			<default-locale-name>en</default-locale-name>
+			<client-locale-finder-class>com.sideinternational.applauncher.ClientLocaleFinderImpl</client-locale-finder-class>
+		</resource>
+
+		<validator>
+			<locales>
+				<locale-name>en</locale-name>
+				<locale-name>fr</locale-name>
+			</locales>
+			<packages>
+				<package-name>
+					com.sideinternational.sas.event.resource.configuration
+				</package-name>
+				<package-name>
+					com.sideinternational.sas.event.resource.debug
+				</package-name>
+				<package-name>
+					com.sideinternational.sas.event.resource.system
+				</package-name>
+				<package-name>
+					com.sideinternational.sas.event.resource.security
+				</package-name>
+			</packages>
+		</validator>
+
+	</event-definition>
+
+	<!--  Logging -->
+	<event-logging>
+
+		<enabled>true</enabled>
+
+		<handler>
+			<class>
+				com.sideinternational.sas.event.logging.handler.event.EventConsoleHandler
+			</class>
+			<name>SIDE_CONSOLE</name>
+			<parameters>
+				<enabled>TRUE</enabled>
+				<level>DEBUG</level>
+				<formatter-class>
+					com.sideinternational.sas.event.logging.handler.event.SimpleEventFormatter
+				</formatter-class>
+				<filter-class>
+					com.sideinternational.sas.event.logging.handler.event.EventFilter
+				</filter-class>
+			</parameters>
+		</handler>
+
+	</event-logging>
+
+	<!--  Options -->
+	<application-options>
+		<updatable-user-display-name>YES</updatable-user-display-name>
+		<updatable-user-zone>NO</updatable-user-zone>
+		<max-login-failed>3</max-login-failed>
+		<resource-access-class></resource-access-class>
+	</application-options>
+
+	<!-- User authentication parameters -->
+	<user-authentication>
+
+		<ldap-parameters></ldap-parameters>
+		
+	</user-authentication>
+	
+	<!-- Concrete implementations used by the SAS library -->
+	<services-implementation>
+		<user-class></user-class>
+		<usergroup-class></usergroup-class>
+		<profile-class></profile-class>
+		<authentication-class></authentication-class>
+		<authorization-class>com.sideinternational.sas.service.impl.scdb.AuthorizationServiceImpl</authorization-class>
+		<application-class></application-class>
+		<module-class></module-class>
+		<zone-class></zone-class>
+		<report-datasource-class>com.sideinternational.applauncher.ReportDataSource</report-datasource-class>
+		<reporting-class>com.sideinternational.sas.service.impl.JasperForgeReportService</reporting-class>	
+		<current-operator-finder-class>com.sideinternational.applauncher.CurrentOperatorFinderImpl</current-operator-finder-class>
+		<current-application-finder-class/> 
+	</services-implementation>
+	
+</configuration>
